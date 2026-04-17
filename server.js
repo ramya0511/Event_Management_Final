@@ -5,10 +5,11 @@ const path = require("path");
 
 const app = express();
 
+/* Middleware */
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, "public")));
 
+/* MongoDB */
 mongoose.connect("mongodb://127.0.0.1:27017/eventDB")
 .then(() => console.log("MongoDB Connected"))
 .catch(err => console.log(err));
@@ -45,6 +46,7 @@ app.post("/signup", async (req,res)=>{
 
   const hash = await bcrypt.hash(password,10);
   await User.create({name,email,password:hash});
+
   res.send("Signup successful");
 });
 
@@ -62,7 +64,6 @@ app.post("/login", async (req,res)=>{
 /* Events */
 app.post("/addEvent", async (req,res)=>{
   const data = req.body;
-
   data.totalSeats = data.totalSeats || 50;
   data.seatsLeft = data.totalSeats;
 
@@ -85,6 +86,32 @@ app.delete("/delete/:id", async (req,res)=>{
   res.send("Deleted");
 });
 
+/* Booking */
+app.put("/book/:id", async (req, res) => {
+  try {
+    const event = await Event.findById(req.params.id);
+    if (!event) return res.status(404).send("Event not found");
+
+    const today = new Date().toISOString().split("T")[0];
+
+    if (event.date < today) {
+      return res.status(400).send("Cannot book past events");
+    }
+
+    if (event.seatsLeft <= 0) {
+      return res.status(400).send("No seats left");
+    }
+
+    event.seatsLeft -= 1;
+    await event.save();
+
+    res.send("Booking confirmed");
+
+  } catch (err) {
+    res.status(500).send("Booking error");
+  }
+});
+
 /* Favorite */
 app.put("/favorite/:id", async (req,res)=>{
   const event = await Event.findById(req.params.id);
@@ -101,29 +128,9 @@ app.put("/rsvp/:id", async (req,res)=>{
   res.send("RSVP updated");
 });
 
-/* Booking Route */
-app.put("/book/:id", async (req, res) => {
-  try {
-    const event = await Event.findById(req.params.id);
+/* Static */
+app.use(express.static(path.join(__dirname, "public")));
 
-    if (!event) {
-      return res.status(404).send("Event not found");
-    }
-
-    if (event.seatsLeft <= 0) {
-      return res.status(400).send("No seats left");
-    }
-
-    event.seatsLeft = event.seatsLeft - 1;
-
-    await event.save();
-
-    res.send("Booking confirmed");
-
-  } catch (err) {
-    res.status(500).send("Booking error");
-  }
-});
 app.listen(5000, ()=>{
   console.log("Server running on http://localhost:5000");
 });

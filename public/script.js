@@ -10,6 +10,10 @@ window.onload = () => {
 /* Modal */
 function openModal() {
   document.getElementById("eventModal").style.display = "flex";
+
+  // Prevent selecting past dates
+  const today = new Date().toISOString().split("T")[0];
+  document.getElementById("date").setAttribute("min", today);
 }
 
 function closeModal() {
@@ -46,6 +50,14 @@ async function saveEvent() {
     description: document.getElementById("description").value.trim(),
     totalSeats: Number(document.getElementById("totalSeats")?.value || 50)
   };
+
+  const today = new Date().toISOString().split("T")[0];
+
+  // Block past event creation
+  if (payload.date < today) {
+    showToast("Cannot create events in the past");
+    return;
+  }
 
   if (!payload.title || !payload.date || !payload.location || !payload.description) {
     showToast("Fill all fields including description");
@@ -121,6 +133,7 @@ function renderEvents(events) {
     `;
   });
 }
+
 /* Edit */
 function editEvent(id, title, date, location, category, image, description, totalSeats) {
   openModal();

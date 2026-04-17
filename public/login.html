@@ -1,24 +1,30 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Login</title>
-<link rel="stylesheet" href="auth.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login</title>
+
+  <!-- FIXED PATH -->
+  <link rel="stylesheet" href="/auth.css">
 </head>
 <body>
 
 <div class="box">
   <h1>Login</h1>
 
-  <input type="email" id="email" placeholder="Email">
-  <input type="password" id="password" placeholder="Password">
+  <form onsubmit="event.preventDefault(); login();">
+    <input type="email" id="email" placeholder="Email" required>
+    <input type="password" id="password" placeholder="Password" required>
 
-  <button onclick="login()">Login</button>
+    <button type="submit">Login</button>
+  </form>
 
   <p>No account? <a href="/signup">Signup</a></p>
 </div>
 
-<script src="auth.js"></script>
+<!-- FIXED PATH -->
+<script src="/auth.js"></script>
+
 </body>
 </html>
